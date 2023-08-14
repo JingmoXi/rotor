@@ -16,4 +16,4 @@ bytes = "1.4.0"
 futures-util = "0.3.28"
 serde_json = "1.0.104"
 serde = { version = "1.0.104", features = ["derive"] }
-##
+base64 = "0.21.2"

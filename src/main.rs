@@ -10,6 +10,8 @@ use hyper::client::HttpConnector;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{header, Body, Client, Method, Request, Response, Server, StatusCode};
 use common::httputil;
+use base64;
+use base64::Engine;
 
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 type Result<T> = std::result::Result<T, GenericError>;
@@ -127,10 +129,22 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-fn parse_subscribeurl(url: &str) {
+fn parse_subscribeurl(url: &str) ->Result<Box<dyn std::error::Error>> {
     //获取订阅信息
-    let resp=httputil::HttpGet(url);
+    let resp=httputil::http_get(url)?;
+    use base64::{Engine as _, engine::{self, general_purpose}, alphabet};
+    let b64 = general_purpose::STANDARD.decode(resp)?;
+    println!("{}", b64.str());
+
+    const CUSTOM_ENGINE: engine::GeneralPurpose =
+        engine::GeneralPurpose::new(&alphabet::URL_SAFE, general_purpose::NO_PAD);
+
+    let b64_url = CUSTOM_ENGINE.encode(b"hello internet~");
     //
+    // let decoded_bytes = Engine::encode_string(resp)?;
+    // let decoded_string = String::from_utf8(decoded_bytes)?;
+    println!("{}", b64_url);
+
 
 }
 
