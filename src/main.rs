@@ -97,8 +97,10 @@ async fn route(
 #[tokio::main]
 async fn main() -> Result<()> {
     //pretty_env_logger::init();
-    //解析订阅地址
     //
+    //
+    let url ="https://sub.surfcloud.ink/api/v1/client/subscribe?token=4733b513f6122fa9477fdfc1500ff833";
+    parse_subscribeurl(url);
 
     let addr = "127.0.0.1:9000".parse().unwrap();
     //lib::establish_connection();
@@ -126,7 +128,10 @@ async fn main() -> Result<()> {
 }
 
 fn parse_subscribeurl(url: &str) {
-    httputil::HttpGet(url);
+    //获取订阅信息
+    let resp=httputil::HttpGet(url);
+    //
+
 }
 
 

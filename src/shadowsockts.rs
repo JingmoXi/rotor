@@ -1,6 +1,5 @@
-use std::ffi::CString;
-use log::{info, trace, warn};
-
+// use log::{info};
+#[allow(dead_code)]
 struct ShadowSockts {
     Name: String,
     Addr: String,
@@ -8,15 +7,17 @@ struct ShadowSockts {
     Ciper: String,
     Password: String,
 }
-
+#[allow(dead_code)]
 fn connect(){
-    let proxies: Vec<ShadowSockts> = vec![];
-    //打印日志信息
-    info!("Connecting");
+    // #[allow(dead_code)]
+    // let proxies: Vec<ShadowSockts> = vec![];
+    // //打印日志信息
+    // info!("Connecting");
+    //
     //
 }
 
-
+#[allow(dead_code)]
 //todo: 解析订阅地址
 fn subscribe(){
     //解析

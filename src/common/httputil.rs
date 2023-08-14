@@ -1,12 +1,18 @@
-use std::collections::HashMap;
+
+use std::io::Read;
 use reqwest;
 
-pub(crate) fn HttpGet(url: &str) ->Result<String>{
+pub(crate) fn HttpGet(url: &str) -> String{
     //发送http请求
-    let resp = reqwest::get(url)
-        .json::<HashMap<String, String>>();
+    // let resp = reqwest::get(url)
+    //     .json::<String>();
     //
-    return ""
+    let mut resp = reqwest::blocking::get(url)?;
+    let mut body = String::new();
+    resp.read_to_string(&mut body)?;
+
+    println!("{:#?}", body);
+    body
 }
 
 #[test]
