@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use reqwest;
 
-fn HttpGet(url: &str)->Result<String>{
+pub(crate) fn HttpGet(url: &str) ->Result<String>{
     //发送http请求
     let resp = reqwest::get(url)
         .json::<HashMap<String, String>>();
