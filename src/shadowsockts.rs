@@ -1,11 +1,11 @@
 // use log::{info};
 #[allow(dead_code)]
 struct ShadowSockts {
-    Name: String,
-    Addr: String,
-    Port: i32,
-    Ciper: String,
-    Password: String,
+    name: String,
+    addr: String,
+    port: i32,
+    ciper: String,
+    password: String,
 }
 #[allow(dead_code)]
 fn connect(){

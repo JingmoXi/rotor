@@ -1,9 +1,11 @@
 #![deny(warnings)]
+
 mod shadowsockts;
 mod common;
 mod openapi;
 
 
+// use std::error::Error;
 use bytes::Buf;
 use futures_util::{stream, StreamExt};
 use hyper::client::HttpConnector;
@@ -11,7 +13,7 @@ use hyper::service::{make_service_fn, service_fn};
 use hyper::{header, Body, Client, Method, Request, Response, Server, StatusCode};
 use common::httputil;
 use base64;
-use base64::Engine;
+
 
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 type Result<T> = std::result::Result<T, GenericError>;
@@ -101,8 +103,16 @@ async fn main() -> Result<()> {
     //pretty_env_logger::init();
     //
     //
-    let url ="https://sub.surfcloud.ink/api/v1/client/subscribe?token=4733b513f6122fa9477fdfc1500ff833";
-    parse_subscribeurl(url);
+    let url = "https://sub.surfcloud.ink/api/v1/client/subscribe?token=4733b513f6122fa9477fdfc1500ff833";
+
+    let subscribe_info = match parse_subscribeurl(url) {
+        Ok(s) => s,
+        Err(e) => {
+            println!("{}", e);
+            panic!("subscribe url error!")
+        }
+    };
+    println!("{}", subscribe_info);
 
     let addr = "127.0.0.1:9000".parse().unwrap();
     //lib::establish_connection();
@@ -129,25 +139,32 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-fn parse_subscribeurl(url: &str) ->Result<Box<dyn std::error::Error>> {
+fn parse_subscribeurl(url: &str) -> Result<String> {
     //获取订阅信息
-    let resp=httputil::http_get(url)?;
-    use base64::{Engine as _, engine::{self, general_purpose}, alphabet};
-    let b64 = general_purpose::STANDARD.decode(resp)?;
-    println!("{}", b64.str());
+    let resp = httputil::http_get(url);
+    let re = match resp {
+        Ok(text) => text,
+        Err(err) => return Err(GenericError::try_from(err.to_string()).unwrap()),
+    };
 
-    const CUSTOM_ENGINE: engine::GeneralPurpose =
-        engine::GeneralPurpose::new(&alphabet::URL_SAFE, general_purpose::NO_PAD);
+    use base64::{Engine as _, engine::{general_purpose}};
+    let b64 = general_purpose::STANDARD.decode(re);
 
-    let b64_url = CUSTOM_ENGINE.encode(b"hello internet~");
-    //
+
+    let k = match b64 {
+        Ok(text) => String::from_utf8(text),
+        Err(err) => return Err(GenericError::try_from(err.to_string()).unwrap()),
+    };
+
+    match k {
+        Ok(text) => return Ok(text),
+        Err(err) => return Err(GenericError::try_from(err.to_string()).unwrap()),
+    };
+
+
     // let decoded_bytes = Engine::encode_string(resp)?;
     // let decoded_string = String::from_utf8(decoded_bytes)?;
-    println!("{}", b64_url);
-
-
 }
-
 
 
 //
