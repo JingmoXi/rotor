@@ -1,8 +1,9 @@
 #![deny(warnings)]
 
-mod shadowsockts;
+
 mod common;
 mod openapi;
+mod proxy;
 
 
 // use std::error::Error;
@@ -13,7 +14,7 @@ use hyper::service::{make_service_fn, service_fn};
 use hyper::{header, Body, Client, Method, Request, Response, Server, StatusCode};
 use common::httputil;
 use base64;
-
+use proxy::proxy;
 
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 type Result<T> = std::result::Result<T, GenericError>;
@@ -98,6 +99,8 @@ async fn route(
     }
 }
 
+const Proxy: Vec<proxy::ShadowSockts> = vec![proxy::ShadowSockts];
+
 #[tokio::main]
 async fn main() -> Result<()> {
     //pretty_env_logger::init();
@@ -105,7 +108,7 @@ async fn main() -> Result<()> {
     //
     let url = "https://sub.surfcloud.ink/api/v1/client/subscribe?token=4733b513f6122fa9477fdfc1500ff833";
 
-    let subscribe_info = match parse_subscribeurl(url) {
+    let subscribe_info = match parse_subscribeurl(url).await {
         Ok(s) => s,
         Err(e) => {
             println!("{}", e);
@@ -139,10 +142,21 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-fn parse_subscribeurl(url: &str) -> Result<String> {
+fn get_proxy_infos(links: &str) -> Result<Vec<proxy>> {
+    //
+    let linkvec = links.split_terminator('\n').collect();
+    //
+    for link in linkvec {
+        //
+    }
+    Ok(())
+
+}
+
+async fn parse_subscribeurl(url: &str) -> Result<String> {
     //获取订阅信息
     let resp = httputil::http_get(url);
-    let re = match resp {
+    let re = match resp.await {
         Ok(text) => text,
         Err(err) => return Err(GenericError::try_from(err.to_string()).unwrap()),
     };
