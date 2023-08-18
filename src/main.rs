@@ -4,6 +4,7 @@
 mod common;
 mod openapi;
 mod proxy;
+mod dashboard;
 
 
 // use std::error::Error;
@@ -14,7 +15,7 @@ use hyper::service::{make_service_fn, service_fn};
 use hyper::{header, Body, Client, Method, Request, Response, Server, StatusCode};
 use common::httputil;
 use base64;
-use proxy::proxy;
+use proxy::model;
 
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 type Result<T> = std::result::Result<T, GenericError>;
@@ -48,25 +49,14 @@ async fn client_request_response(client: &Client<HttpConnector>) -> Result<Respo
     Ok(Response::new(body))
 }
 
-async fn api_post_response(req: Request<Body>) -> Result<Response<Body>> {
-    // Aggregate the body...
-    let whole_body = hyper::body::aggregate(req).await?;
-    // Decode as JSON...
-    let mut data: serde_json::Value = serde_json::from_reader(whole_body.reader())?;
-    // Change the JSON...
-    data["test"] = serde_json::Value::from("test_value");
-    // And respond with the new JSON.
-    let json = serde_json::to_string(&data)?;
-    let response = Response::builder()
-        .status(StatusCode::OK)
-        .header(header::CONTENT_TYPE, "application/json")
-        .body(Body::from(json))?;
-    Ok(response)
-}
 
-async fn api_get_response() -> Result<Response<Body>> {
-    let data = vec!["foo", "bar"];
-    let res = match serde_json::to_string(&data) {
+
+
+
+async unsafe fn subsribes() -> Result<Response<Body>> {
+
+
+    let res = match serde_json::to_string(&PROXYY) {
         Ok(json) => Response::builder()
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(json))
@@ -79,16 +69,14 @@ async fn api_get_response() -> Result<Response<Body>> {
     Ok(res)
 }
 
-async fn route(
+async unsafe fn route(
     req: Request<Body>,
     client: Client<HttpConnector>,
 ) -> Result<Response<Body>> {
     match (req.method(), req.uri().path()) {
         (&Method::GET, "/") | (&Method::GET, "/index.html") => Ok(Response::new(INDEX.into())),
         (&Method::GET, "/test.html") => client_request_response(&client).await,
-        (&Method::POST, "/json_api") => api_post_response(req).await,
-        (&Method::GET, "/json_api") => api_get_response().await,
-
+        (&Method::GET, "/subsribes") => subsribes().await,
         _ => {
             // Return 404 not found response.
             Ok(Response::builder()
@@ -99,7 +87,7 @@ async fn route(
     }
 }
 
-const Proxy: Vec<proxy::ShadowSockts> = vec![proxy::ShadowSockts];
+static  mut PROXYY: Vec<model::ShadowSockts> = vec![];
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -115,7 +103,12 @@ async fn main() -> Result<()> {
             panic!("subscribe url error!")
         }
     };
-    println!("{}", subscribe_info);
+    unsafe {   get_proxy_infos(subscribe_info); }
+    //println!("{}", subscribe_info);
+
+    //-----------------------------启动ui界面------------------------------------------------
+    //todo,
+
 
     let addr = "127.0.0.1:9000".parse().unwrap();
     //lib::establish_connection();
@@ -126,7 +119,7 @@ async fn main() -> Result<()> {
         // Move a clone of `client` into the `service_fn`.
         let client = client.clone();
         async {
-            Ok::<_, GenericError>(service_fn(move |req| {
+            Ok::<_, GenericError>(service_fn(move |req| unsafe {
                 // Clone again to ensure that client outlives this closure.
                 route(req, client.to_owned())
             }))
@@ -137,19 +130,33 @@ async fn main() -> Result<()> {
 
     println!("Listening on http://{}", addr);
 
+
+
     server.await?;
 
     Ok(())
 }
 
-fn get_proxy_infos(links: &str) -> Result<Vec<proxy>> {
+#[allow(dead_code)]
+unsafe fn get_proxy_infos(links: String)  {
     //
-    let linkvec = links.split_terminator('\n').collect();
+    let linkvec:Vec<&str> = links.split_terminator('\n').collect();
     //
     for link in linkvec {
         //
-    }
-    Ok(())
+        println!("{}",link);
+        PROXYY.push(model::ShadowSockts{
+            name: "".to_string(),
+            addr: link.to_string(),
+            port: 8080,
+            ciper: "".to_string(),
+            password: "".to_string(),
+        });
+        println!("{}",PROXYY.len());
+    };
+    //借用？
+    // println!{"{}",Proxy};
+
 
 }
 
